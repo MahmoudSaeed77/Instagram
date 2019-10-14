@@ -1,3 +1,3 @@
 # Instagram
 
-![](Screen Shot 2019-10-14 at 11.28.24 AM.png)
+![](Screen%20Shot%202019-10-14%20at%2011.28.24%20AM.png)
