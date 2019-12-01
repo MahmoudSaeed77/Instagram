@@ -14,7 +14,8 @@ class ShareViewVC: NSObject {
     
     let mainId = "mainId"
     let socialArray = ["Facebook", "Twitter", "Pinterest", "Google+", "Mail", "Link"]
-    let imageNames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    let imageNames = ["doda", "2", "3", "4", "5", "6", "7", "8", "9", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    let names = ["Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika"]
     
     
     
@@ -77,7 +78,7 @@ class ShareViewVC: NSObject {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("Cancel", for: .normal)
-        button.setTitleColor(UIColor.black, for: .normal)
+        button.setTitleColor(UIColor.red, for: .normal)
         return button
     }()
     
@@ -194,6 +195,7 @@ extension ShareViewVC: UICollectionViewDelegate, UICollectionViewDataSource, UIC
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: mainId, for: indexPath) as! MainCell
             cell.imageView.image = UIImage(named: imageNames[indexPath.item])?.withRenderingMode(.alwaysOriginal)
+            cell.nameLabel.text = names[indexPath.item]
             return cell
         }
     }

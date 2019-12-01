@@ -7,15 +7,78 @@
 //
 
 import UIKit
+import Firebase
+import Kingfisher
+
+//var imageCahche = [String: UIImage]()
 
 class HomeCell: UICollectionViewCell {
+    
+    var post: Post? {
+        didSet {
+//            fetchUserImage()
+//            fetchPostsImages()
+            guard let profileUrl = post?.user.imageUrl else {return}
+            guard let Url = URL(string: profileUrl) else {return}
+            profileImage.kf.setImage(with: Url)
+            
+            
+            guard let imageUrl = post?.imageUrl else {return}
+            guard let url = URL(string: imageUrl) else {return}
+            postImage.kf.setImage(with: url)
+            
+            self.nameLabel.text = post?.user.fullName
+            self.descriptionLabel.text = post?.caption
+            
+           
+        }
+    }
+    
+    fileprivate func fetchUserImage() {
+        guard let profileUrl = post?.user.imageUrl else {return}
+        guard let Url = URL(string: profileUrl) else {return}
+        
+        URLSession.shared.dataTask(with: Url) { (data, response, err) in
+            if let err = err {
+                print("error downloading profile images:", err)
+            }
+            guard let data = data else {return}
+            DispatchQueue.main.async {
+                self.profileImage.image = UIImage(data: data)
+            }
+            }.resume()
+    }
+    
+//    fileprivate func fetchPostsImages() {
+//        guard let imageUrl = post?.imageUrl else {return}
+//
+//        if let chachedImage = imageCahche[imageUrl] {
+//            self.postImage.image = chachedImage
+//        }
+//        guard let url = URL(string: imageUrl) else {return}
+//
+//        URLSession.shared.dataTask(with: url) { (data, response, err) in
+//            if let err = err {
+//                print("error downloading post images:", err)
+//            }
+//
+//            guard let data = data else {return}
+//            DispatchQueue.main.async {
+//                self.postImage.image = UIImage(data: data)
+//                imageCahche[url.absoluteString] = UIImage(data: data)
+//            }
+//            }.resume()
+//    }
+    
+    
     var homeVC = HomeVC()
     var shareView = ShareViewVC()
     let profileImage: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "doda")?.withRenderingMode(.alwaysOriginal))
+        let image = UIImageView()
+        image.backgroundColor = UIColor.lightGray
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFit
-        image.layer.cornerRadius = 40
+        image.layer.cornerRadius = 30
         image.layer.masksToBounds = true
         return image
     }()
@@ -48,9 +111,11 @@ class HomeCell: UICollectionViewCell {
     }()
     
     let postImage: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "Img")?.withRenderingMode(.alwaysOriginal))
+        let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleToFill
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
+        image.backgroundColor = UIColor.lightGray
         return image
     }()
     
@@ -128,10 +193,6 @@ class HomeCell: UICollectionViewCell {
         backgroundColor = UIColor.white
         layer.cornerRadius = 12
         clipsToBounds = true
-//        self.layer.shadowOpacity = 0.3
-//        self.layer.shadowColor = UIColor.darkGray.cgColor
-//        self.layer.shadowRadius = 5
-//        self.layer.shadowOffset = CGSize.zero
         
         shareButton.addTarget(self, action: #selector(shareTapped), for: .touchUpInside)
         
@@ -155,8 +216,8 @@ class HomeCell: UICollectionViewCell {
         NSLayoutConstraint.activate([
             profileImage.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
             profileImage.topAnchor.constraint(equalTo: topAnchor, constant: 5),
-            profileImage.heightAnchor.constraint(equalToConstant: 80),
-            profileImage.widthAnchor.constraint(equalToConstant: 80),
+            profileImage.heightAnchor.constraint(equalToConstant: 60),
+            profileImage.widthAnchor.constraint(equalToConstant: 60),
             
             nameLabel.leadingAnchor.constraint(equalTo: profileImage.trailingAnchor, constant: 10),
             nameLabel.topAnchor.constraint(equalTo: profileImage.topAnchor, constant: 10),
@@ -169,7 +230,7 @@ class HomeCell: UICollectionViewCell {
             
             postImage.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: 5),
             postImage.widthAnchor.constraint(equalTo: widthAnchor),
-            postImage.heightAnchor.constraint(equalToConstant: 220),
+            postImage.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.6),
             
             descriptionLabel.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
             descriptionLabel.topAnchor.constraint(equalTo: postImage.bottomAnchor, constant: 5),

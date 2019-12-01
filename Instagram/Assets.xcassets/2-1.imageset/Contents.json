@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "idiom" : "universal",
+      "filename" : "amazing_dawn_fall_fog_foliage_forest_grass_green_landscape_mist_mountains_nature_outdoors_scenery_scenic_sky_summer_sun_sunrays_sunset_tree_trees_2560x1701.jpg",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "version" : 1,
+    "author" : "xcode"
+  }
+}

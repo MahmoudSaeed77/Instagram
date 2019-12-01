@@ -9,10 +9,29 @@
 import UIKit
 
 class PicturesCell: UICollectionViewCell {
+    
+    var post: Post? {
+        didSet {
+            print("posts here...")
+            guard let imageUrl = post?.imageUrl else {return}
+            guard let url = URL(string: imageUrl) else {return}
+            URLSession.shared.dataTask(with: url) { (data, response, err) in
+                if let err = err {
+                    print("error downloading post images:", err)
+                }
+                guard let data = data else {return}
+                DispatchQueue.main.async {
+                    self.pictureImageView.image = UIImage(data: data)
+                }
+            }.resume()
+        }
+    }
+    
     let pictureImageView: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFit
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
         image.tintColor = UIColor.lightGray
         return image
     }()
