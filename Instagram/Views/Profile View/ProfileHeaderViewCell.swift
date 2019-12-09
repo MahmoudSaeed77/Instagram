@@ -8,11 +8,16 @@
 
 import UIKit
 import Firebase
+import Kingfisher
+
+protocol HeaderCellDelegate {
+    func gridView()
+    func listView()
+}
 
 class ProfileHeaderViewCell: UICollectionViewCell {
     
-    var portrait = [NSLayoutConstraint]()
-    var landScape = [NSLayoutConstraint]()
+    var delegate: HeaderCellDelegate?
     
     let coverImage: UIImageView = {
         let image = UIImageView(image: UIImage(named: "image")?.withRenderingMode(.alwaysOriginal))
@@ -20,8 +25,6 @@ class ProfileHeaderViewCell: UICollectionViewCell {
         image.contentMode = .scaleToFill
         return image
     }()
-    
-    
     
     let profileImage: UIImageView = {
         let image = UIImageView()
@@ -59,19 +62,31 @@ class ProfileHeaderViewCell: UICollectionViewCell {
         return view
     }()
     
-    let gridButton: UIButton = {
+    lazy var gridButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(UIImage(named: "thumb")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.addTarget(self, action: #selector(gridTapped), for: .touchUpInside)
         return button
     }()
     
-    let listButton: UIButton = {
+    @objc func gridTapped() {
+        print("grid in cell")
+        delegate?.gridView()
+    }
+    
+    lazy var listButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(UIImage(named: "card")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.addTarget(self, action: #selector(listTapped), for: .touchUpInside)
         return button
     }()
+    
+    @objc func listTapped() {
+        print("list in cell")
+        delegate?.listView()
+    }
     
     let bookmarkButton: UIButton = {
         let button = UIButton(type: .system)
@@ -146,12 +161,8 @@ class ProfileHeaderViewCell: UICollectionViewCell {
     var user: User? {
         didSet {
             downloadProfileImage()
-            
             guard let currentUserId = Auth.auth().currentUser?.uid else {return}
-            
             guard let userId = user?.uid else {return}
-            
-            
             if currentUserId == userId {
                 followButton.isHidden = true
             } else {
@@ -167,25 +178,13 @@ class ProfileHeaderViewCell: UICollectionViewCell {
                 }) { (err) in
                     print("error obtain data", err)
                 }
-                
             }
-            
-            
         }
     }
     
     func downloadProfileImage(){
         guard let url = URL(string: self.user?.imageUrl ?? "") else {return}
-        URLSession.shared.dataTask(with: url, completionHandler: { (data, response, err) in
-            if let err = err {
-                print("fetching profile image error", err)
-            }
-            guard let data = data else {return}
-            guard let image = UIImage(data: data)?.withRenderingMode(.alwaysOriginal) else {return}
-            DispatchQueue.main.async {
-                self.profileImage.image = image
-            }
-        }).resume()
+        profileImage.kf.setImage(with: url)
     }
     
     func setupView(){

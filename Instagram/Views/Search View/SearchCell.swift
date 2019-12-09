@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class SearchCell: UICollectionViewCell {
     
@@ -16,26 +17,14 @@ class SearchCell: UICollectionViewCell {
             
             guard let imageUrl = user?.imageUrl else {return}
             guard let url = URL(string: imageUrl) else {return}
-            
-            URLSession.shared.dataTask(with: url) { (data, response, err) in
-                if let err = err {
-                    print("error downloading profile images:", err)
-                }
-                
-                guard let data = data else {return}
-                DispatchQueue.main.async {
-                    self.profileImage.image = UIImage(data: data)
-                }
-                
-                
-            }.resume()
+            profileImage.kf.setImage(with: url)
         }
     }
     
     let profileImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.backgroundColor = UIColor.purple
+        image.backgroundColor = UIColor.lightGray
         image.clipsToBounds = true
         image.layer.cornerRadius = 45
         return image

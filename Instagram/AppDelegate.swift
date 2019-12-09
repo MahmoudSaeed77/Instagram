@@ -16,7 +16,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     fileprivate func checkUser(){
         if Auth.auth().currentUser?.uid != nil {
-            let vc = TapBarVC()
+//            let vc = TapBarVC()
+//            let navController = UINavigationController(rootViewController: vc)
+//            navController.navigationBar.isHidden = true
+//            window?.rootViewController = navController
+            window = UIWindow()
+            window?.makeKeyAndVisible()
+            window?.rootViewController = TapBarVC()
+        } else {
+            window = UIWindow()
+            window?.makeKeyAndVisible()
+            let vc = StartController()
             let navController = UINavigationController(rootViewController: vc)
             navController.navigationBar.isHidden = true
             window?.rootViewController = navController
@@ -26,12 +36,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
-        window = UIWindow(frame: UIScreen.main.bounds)
+//        window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
-        let vc = StartController()
-        let navController = UINavigationController(rootViewController: vc)
-        navController.navigationBar.isHidden = true
-        window?.rootViewController = navController
+//        let vc = StartController()
+//        let navController = UINavigationController(rootViewController: vc)
+//        navController.navigationBar.isHidden = true
+        window = UIWindow()
+        window?.rootViewController = TapBarVC()
         checkUser()
         
         return true

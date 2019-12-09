@@ -29,7 +29,7 @@ class PhotoSelectorController: UIViewController {
     var header = PhotosHeader()
     fileprivate func fetchPhotos() {
         let fetchOptions = PHFetchOptions()
-        fetchOptions.fetchLimit = 30
+//        fetchOptions.fetchLimit = 30
         let sortDescriptor = NSSortDescriptor(key: "creationDate", ascending: false)
         fetchOptions.sortDescriptors = [sortDescriptor]
         let allPhotos = PHAsset.fetchAssets(with: .image, options: fetchOptions)

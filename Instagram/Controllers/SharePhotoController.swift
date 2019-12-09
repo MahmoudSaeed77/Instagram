@@ -74,6 +74,8 @@ class SharePhotoController: UIViewController {
             print("successfully adding post informations")
             self.navigationItem.rightBarButtonItem?.isEnabled = false
             self.dismiss(animated: true, completion: nil)
+            let name = NSNotification.Name(rawValue: "loadPosts")
+            NotificationCenter.default.post(name: name, object: nil)
         }
     }
 }

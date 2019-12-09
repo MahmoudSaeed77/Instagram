@@ -25,11 +25,7 @@ class SearchView: UIView {
         super.init(frame: frame)
         backgroundColor = UIColor.white
         
-        
-        
         addSubview(collectionView)
-        
-        
         
         NSLayoutConstraint.activate([
             collectionView.widthAnchor.constraint(equalTo: widthAnchor),

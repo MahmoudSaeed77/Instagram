@@ -14,8 +14,11 @@ import Firebase
 class ProfileVC: UIViewController {
     let picturesId = "picturesId"
     let headerId = "headerId"
+    let homeId = "homeId"
     
     var userId: String?
+    
+    var cellSelected = false
     
     var profileView = ProfileView()
     
@@ -24,9 +27,31 @@ class ProfileVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view = profileView
+        
+        
+        let name = NSNotification.Name(rawValue: "loadPosts")
+        NotificationCenter.default.addObserver(self, selector: #selector(loadPosts), name: name, object: nil)
+        
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshAction), for: .valueChanged)
+        profileView.MainCollectionView.refreshControl = refreshControl
+        
+        
         collectionViewsConfigrations()
         fetchUser()
-//        fetchPosts()
+    }
+    
+    @objc fileprivate func refreshAction() {
+        self.posts.removeAll()
+        self.profileView.MainCollectionView.reloadData()
+        fetchPosts()
+        posts.sort { (p1, p2) -> Bool in
+            return p1.postData.compare(p2.postData) == .orderedAscending
+        }
+    }
+    
+    @objc fileprivate func loadPosts() {
+        refreshAction()
     }
     
     
@@ -44,6 +69,7 @@ class ProfileVC: UIViewController {
         profileView.MainCollectionView.dataSource = self
         profileView.MainCollectionView.register(ProfileHeaderViewCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: headerId)
         profileView.MainCollectionView.register(PicturesCell.self, forCellWithReuseIdentifier: picturesId)
+        profileView.MainCollectionView.register(HomeCell.self, forCellWithReuseIdentifier: homeId)
     }
     
     
@@ -109,10 +135,21 @@ class ProfileVC: UIViewController {
                 dictionaries.forEach({ (key, value) in
                     guard let dictionary = value as? [String:Any] else {return}
                     guard let user = self.user else {return}
-                    let post = Post(user: user, dictionary: dictionary)
-                    self.posts.append(post)
+                    var post = Post(user: user, dictionary: dictionary)
+                    let likeRef = Database.database().reference().child("likes").child(key).child(uid)
+                    likeRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                        if let value = snapshot.value as? Int, value == 1 {
+                            post.isLiked = true
+                        } else {
+                            post.isLiked = false
+                        }
+                        self.posts.append(post)
+                        self.profileView.MainCollectionView.reloadData()
+                    }, withCancel: { (err) in
+                        print("fetch likes error:", err)
+                    })
                 })
-                self.profileView.MainCollectionView.reloadData()
+                self.profileView.MainCollectionView.refreshControl?.endRefreshing()
             }) { (err) in
                 print("error fetching posts:", err)
             }
@@ -124,12 +161,20 @@ extension ProfileVC: UICollectionViewDataSource {
         return posts.count
     }
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: picturesId, for: indexPath) as! PicturesCell
-        cell.post = posts[indexPath.item]
-        return cell
+        
+        if cellSelected == true {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: homeId, for: indexPath) as! HomeCell
+            cell.post = posts[indexPath.item]
+            return cell
+        } else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: picturesId, for: indexPath) as! PicturesCell
+            cell.post = posts[indexPath.item]
+            return cell
+        }
     }
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! ProfileHeaderViewCell
+        header.delegate = self
         header.user = self.user
         header.nameLabel.text = self.navigationItem.title
         return header
@@ -137,7 +182,12 @@ extension ProfileVC: UICollectionViewDataSource {
 }
 extension ProfileVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: profileView.MainCollectionView.frame.width / 3 - 1, height: profileView.MainCollectionView.frame.width / 3)
+        if cellSelected == true {
+            let height: CGFloat = self.profileView.MainCollectionView.frame.width + 100
+            return CGSize(width: self.profileView.MainCollectionView.frame.width - 18, height: height)
+        } else {
+            return CGSize(width: profileView.MainCollectionView.frame.width / 3 - 1, height: profileView.MainCollectionView.frame.width / 3)
+        }
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 0.1
@@ -149,4 +199,19 @@ extension ProfileVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: profileView.MainCollectionView.frame.width, height: 300)
     }
+}
+
+
+extension ProfileVC: HeaderCellDelegate {
+    func gridView() {
+        cellSelected = false
+        self.profileView.MainCollectionView.reloadData()
+    }
+    
+    func listView() {
+        cellSelected = true
+        self.profileView.MainCollectionView.reloadData()
+    }
+    
+    
 }

@@ -10,65 +10,46 @@ import UIKit
 import Firebase
 import Kingfisher
 
-//var imageCahche = [String: UIImage]()
+protocol HomeCellProtocol {
+    func commentTapped(post: Post)
+    func likeTapped(cell: HomeCell)
+}
 
 class HomeCell: UICollectionViewCell {
+    var delegate: HomeCellProtocol?
+    
     
     var post: Post? {
         didSet {
-//            fetchUserImage()
-//            fetchPostsImages()
-            guard let profileUrl = post?.user.imageUrl else {return}
-            guard let Url = URL(string: profileUrl) else {return}
-            profileImage.kf.setImage(with: Url)
-            
-            
-            guard let imageUrl = post?.imageUrl else {return}
-            guard let url = URL(string: imageUrl) else {return}
-            postImage.kf.setImage(with: url)
-            
+            handleLike()
+            fetchUserImage()
+            fetchPostsImages()
             self.nameLabel.text = post?.user.fullName
             self.descriptionLabel.text = post?.caption
-            
-           
+            self.timeCountLabel.text = post?.postData.timeAgoSinceDate()
+            self.commentCountLabel.text = ""
+        }
+    }
+    
+    fileprivate func handleLike() {
+        if self.post?.isLiked == true {
+            likeIcon.setImage(UIImage(named: "btn_like")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        } else {
+            likeIcon.setImage(UIImage(named: "Activity")?.withRenderingMode(.alwaysOriginal), for: .normal)
         }
     }
     
     fileprivate func fetchUserImage() {
         guard let profileUrl = post?.user.imageUrl else {return}
         guard let Url = URL(string: profileUrl) else {return}
-        
-        URLSession.shared.dataTask(with: Url) { (data, response, err) in
-            if let err = err {
-                print("error downloading profile images:", err)
-            }
-            guard let data = data else {return}
-            DispatchQueue.main.async {
-                self.profileImage.image = UIImage(data: data)
-            }
-            }.resume()
+        profileImage.kf.setImage(with: Url)
     }
     
-//    fileprivate func fetchPostsImages() {
-//        guard let imageUrl = post?.imageUrl else {return}
-//
-//        if let chachedImage = imageCahche[imageUrl] {
-//            self.postImage.image = chachedImage
-//        }
-//        guard let url = URL(string: imageUrl) else {return}
-//
-//        URLSession.shared.dataTask(with: url) { (data, response, err) in
-//            if let err = err {
-//                print("error downloading post images:", err)
-//            }
-//
-//            guard let data = data else {return}
-//            DispatchQueue.main.async {
-//                self.postImage.image = UIImage(data: data)
-//                imageCahche[url.absoluteString] = UIImage(data: data)
-//            }
-//            }.resume()
-//    }
+    fileprivate func fetchPostsImages() {
+        guard let imageUrl = post?.imageUrl else {return}
+        guard let url = URL(string: imageUrl) else {return}
+        postImage.kf.setImage(with: url)
+    }
     
     
     var homeVC = HomeVC()
@@ -113,9 +94,8 @@ class HomeCell: UICollectionViewCell {
     let postImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFill
-        image.clipsToBounds = true
-        image.backgroundColor = UIColor.lightGray
+        image.contentMode = .scaleAspectFit
+        image.clipsToBounds = false
         return image
     }()
     
@@ -130,18 +110,25 @@ class HomeCell: UICollectionViewCell {
         return text
     }()
     
-    let likeIcon: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "btn_like")?.withRenderingMode(.alwaysOriginal))
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFit
-        return image
+    lazy var likeIcon: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(named: "Activity")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.addTarget(self, action: #selector(likeTapped), for: .touchUpInside)
+        return button
     }()
     
-    let commentIcon: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "fill")?.withRenderingMode(.alwaysOriginal))
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFit
-        return image
+    @objc func likeTapped() {
+        print("like from cell...")
+        delegate?.likeTapped(cell: self)
+    }
+    
+    lazy var commentIcon: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(named: "fill")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(commentAction), for: .touchUpInside)
+        return button
     }()
     
     let shareButton: UIButton = {
@@ -230,7 +217,7 @@ class HomeCell: UICollectionViewCell {
             
             postImage.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: 5),
             postImage.widthAnchor.constraint(equalTo: widthAnchor),
-            postImage.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.6),
+            postImage.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.7),
             
             descriptionLabel.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
             descriptionLabel.topAnchor.constraint(equalTo: postImage.bottomAnchor, constant: 5),
@@ -265,6 +252,11 @@ class HomeCell: UICollectionViewCell {
     @objc func shareTapped(sender: UIButton) {
         shareView.showView()
     }
+    @objc fileprivate func commentAction() {
+        guard let post = self.post else {return}
+        delegate?.commentTapped(post: post)
+    }
+    
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

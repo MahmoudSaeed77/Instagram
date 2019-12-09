@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 
+
 class HomeVC: UIViewController {
     var homeView = HomeView()
     let cellId = "cellId"
@@ -17,10 +18,34 @@ class HomeVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view = homeView
+        
+        let name = NSNotification.Name(rawValue: "loadPosts")
+        NotificationCenter.default.addObserver(self, selector: #selector(loadPosts), name: name, object: nil)
+        
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshAction), for: .valueChanged)
+        homeView.collectionView.refreshControl = refreshControl
+        
+        homeView.collectionView.decelerationRate = UIScrollView.DecelerationRate.fast
+        
         setupDelegate()
         setupNavigation()
         fetchPosts()
         fetchFollowingPosts()
+    }
+    
+    @objc fileprivate func refreshAction() {
+        self.posts.removeAll()
+        self.homeView.collectionView.reloadData()
+        fetchPosts()
+        fetchFollowingPosts()
+        posts.sort { (p1, p2) -> Bool in
+            return p1.postData.compare(p2.postData) == .orderedAscending
+        }
+    }
+    
+    @objc fileprivate func loadPosts() {
+        refreshAction()
     }
     
     fileprivate func setupDelegate() {
@@ -42,14 +67,25 @@ class HomeVC: UIViewController {
                 guard let dictionaries = snapshot.value as? [String:Any] else {return}
                 dictionaries.forEach({ (key, value) in
                     guard let dictionary = value as? [String:Any] else {return}
-                    let post = Post(user: user, dictionary: dictionary)
-                    self.posts.append(contentsOf: [post])
+                    var post = Post(user: user, dictionary: dictionary)
+                    post.id = key
+                    let likeRef = Database.database().reference().child("likes").child(key).child(uid)
+                    likeRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                        if let value = snapshot.value as? Int, value == 1 {
+                            post.isLiked = true
+                        } else {
+                            post.isLiked = false
+                        }
+                        self.posts.append(post)
+                        self.homeView.collectionView.reloadData()
+                    }, withCancel: { (err) in
+                        print("fetch likes error:", err)
+                    })
                 })
-                self.homeView.collectionView.reloadData()
+                
             }) { (err) in
                 print("error fetching posts:", err)
             }
-            
         }) { (err) in
             print("fetch name error:", err)
         }
@@ -60,25 +96,33 @@ class HomeVC: UIViewController {
         let dataRef = Database.database().reference().child("following").child(uid)
         dataRef.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let valuesDict = snapshot.value as? [String: Any] else {return}
-            print(valuesDict)
             valuesDict.forEach({ (key, value) in
-                print(key)
                 let userRef = Database.database().reference().child("users").child(key)
                 userRef.observeSingleEvent(of: .value, with: { (snapshot) in
                     guard let userValues = snapshot.value as? [String:Any] else {return}
-                    print(userValues)
                     let user = User(dictionary: userValues)
                     let dataRef = Database.database().reference().child("posts").child(key)
                     dataRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                        self.homeView.collectionView.refreshControl?.endRefreshing()
                         guard let dictionaries = snapshot.value as? [String:Any] else {return}
-                        print(dictionaries)
                         dictionaries.forEach({ (key, value) in
                             guard let dictionary = value as? [String:Any] else {return}
-                            print(dictionary)
-                            let post = Post(user: user, dictionary: dictionary)
-                            self.posts.append(contentsOf: [post])
+                            var post = Post(user: user, dictionary: dictionary)
+                            post.id = key
+                            let likeRef = Database.database().reference().child("likes").child(key).child(uid)
+                            likeRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                                if let value = snapshot.value as? Int, value == 1 {
+                                    post.isLiked = true
+                                } else {
+                                    post.isLiked = false
+                                }
+                                self.posts.append(post)
+                                self.homeView.collectionView.reloadData()
+                            }, withCancel: { (err) in
+                                print("fetch likes error:", err)
+                            })
                         })
-                        self.homeView.collectionView.reloadData()
+                        
                     }) { (err) in
                         print("error fetching posts:", err)
                     }
@@ -108,21 +152,55 @@ extension HomeVC: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomeCell
+        self.posts.sort { (p1, p2) -> Bool in
+            return p1.postData.compare(p2.postData) == .orderedDescending
+        }
         cell.post = posts[indexPath.item]
+        cell.delegate = self
         return cell
     }
-    
-    
 }
 
 extension HomeVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let height: CGFloat = collectionView.frame.width + 70
+        let height: CGFloat = collectionView.frame.width + 100
         return CGSize(width: collectionView.frame.width - 18, height: height)
     }
 }
 
 extension HomeVC: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    }
+}
+
+extension HomeVC: HomeCellProtocol {
+    
+    func likeTapped(cell: HomeCell) {
+        guard let indexPath = homeView.collectionView.indexPath(for: cell) else {return}
+        var post = self.posts[indexPath.item]
+        print(post.caption)
+        
+        guard let postId = post.id else {return}
+        guard let uid = Auth.auth().currentUser?.uid else {return}
+        let dataRef = Database.database().reference().child("likes").child(postId)
+        let values = [uid: post.isLiked == true ? 0 : 1]
+        dataRef.updateChildValues(values) { (err, _) in
+            if let err = err {
+                print("like post error:", err)
+            }
+            
+            print("successfully like post...")
+            
+            post.isLiked = !post.isLiked
+            self.posts[indexPath.item] = post
+            self.homeView.collectionView.reloadItems(at: [indexPath])
+        }
+    }
+    
+    func commentTapped(post: Post) {
+        print(post.caption)
+        let vc = CommentVC()
+        vc.post = post
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

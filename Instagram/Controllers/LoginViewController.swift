@@ -54,7 +54,14 @@ class LoginViewController: UIViewController {
     func goToMain(){
         let vc = TapBarVC()
         let navController = UINavigationController(rootViewController: vc)
+        self.dismiss(animated: true, completion: nil)
         navigationController?.present(navController, animated: true, completion: nil)
+        
+//        var window = UIApplication.shared.keyWindow
+//        window = UIWindow()
+//        window?.makeKeyAndVisible()
+//        window?.rootViewController = TapBarVC()
+        
     }
     
 }
