@@ -27,15 +27,14 @@ class HomeCell: UICollectionViewCell {
             self.nameLabel.text = post?.user.fullName
             self.descriptionLabel.text = post?.caption
             self.timeCountLabel.text = post?.postData.timeAgoSinceDate()
-            self.commentCountLabel.text = ""
         }
     }
     
     fileprivate func handleLike() {
         if self.post?.isLiked == true {
-            likeIcon.setImage(UIImage(named: "btn_like")?.withRenderingMode(.alwaysOriginal), for: .normal)
+            likeIcon.setImage(UIImage(named: "heart2")?.withRenderingMode(.alwaysOriginal), for: .normal)
         } else {
-            likeIcon.setImage(UIImage(named: "Activity")?.withRenderingMode(.alwaysOriginal), for: .normal)
+            likeIcon.setImage(UIImage(named: "heart1")?.withRenderingMode(.alwaysOriginal), for: .normal)
         }
     }
     
@@ -58,17 +57,10 @@ class HomeCell: UICollectionViewCell {
         let image = UIImageView()
         image.backgroundColor = UIColor.lightGray
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFit
-        image.layer.cornerRadius = 30
+        image.contentMode = .scaleAspectFill
+        image.layer.cornerRadius = 25
         image.layer.masksToBounds = true
         return image
-    }()
-    
-    let moreButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(named: "more")?.withRenderingMode(.alwaysOriginal), for: .normal)
-        return button
     }()
     
     lazy var nameLabel: UILabel = {
@@ -81,15 +73,6 @@ class HomeCell: UICollectionViewCell {
         return label
     }()
     
-    let locationLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Cairo"
-        label.textAlignment = .left
-        label.textColor = UIColor.lightGray
-        label.font = UIFont.systemFont(ofSize: 16)
-        return label
-    }()
     
     let postImage: UIImageView = {
         let image = UIImageView()
@@ -102,9 +85,8 @@ class HomeCell: UICollectionViewCell {
     let descriptionLabel: UILabel = {
         let text = UILabel()
         text.translatesAutoresizingMaskIntoConstraints = false
-        text.text = "Hope begins in the dark, the stubborn hope that if you just show up and try to do the right thing"
         text.textAlignment = .left
-        text.textColor = UIColor.lightGray
+        text.textColor = UIColor.black
         text.font = UIFont.systemFont(ofSize: 18)
         text.numberOfLines = 0
         return text
@@ -113,7 +95,7 @@ class HomeCell: UICollectionViewCell {
     lazy var likeIcon: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(named: "Activity")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.setImage(UIImage(named: "heart1")?.withRenderingMode(.alwaysOriginal), for: .normal)
         button.addTarget(self, action: #selector(likeTapped), for: .touchUpInside)
         return button
     }()
@@ -138,26 +120,6 @@ class HomeCell: UICollectionViewCell {
         return button
     }()
     
-    let likeCountLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "15 Likes"
-        label.textAlignment = .left
-        label.textColor = UIColor.lightGray
-        label.font = UIFont.systemFont(ofSize: 16)
-        return label
-    }()
-    
-    let commentCountLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "10 Comments"
-        label.textAlignment = .left
-        label.textColor = UIColor.lightGray
-        label.font = UIFont.systemFont(ofSize: 16)
-        return label
-    }()
-    
     let timeCountLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -174,6 +136,7 @@ class HomeCell: UICollectionViewCell {
         view.backgroundColor = UIColor.lightGray
         return view
     }()
+
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -181,19 +144,23 @@ class HomeCell: UICollectionViewCell {
         layer.cornerRadius = 12
         clipsToBounds = true
         
+        
+        
+        let tapgusterRecognizer = UITapGestureRecognizer(target: self, action: #selector(likeTapped))
+        tapgusterRecognizer.numberOfTapsRequired = 2
+        postImage.isUserInteractionEnabled = true
+        postImage.addGestureRecognizer(tapgusterRecognizer)
+        
+        
         shareButton.addTarget(self, action: #selector(shareTapped), for: .touchUpInside)
         
         addSubview(profileImage)
         addSubview(nameLabel)
-        addSubview(locationLabel)
-        addSubview(moreButton)
         addSubview(postImage)
         addSubview(descriptionLabel)
         addSubview(separatorView)
         addSubview(likeIcon)
-        addSubview(likeCountLabel)
         addSubview(commentIcon)
-        addSubview(commentCountLabel)
         addSubview(shareButton)
         addSubview(timeCountLabel)
         
@@ -203,17 +170,11 @@ class HomeCell: UICollectionViewCell {
         NSLayoutConstraint.activate([
             profileImage.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15),
             profileImage.topAnchor.constraint(equalTo: topAnchor, constant: 5),
-            profileImage.heightAnchor.constraint(equalToConstant: 60),
-            profileImage.widthAnchor.constraint(equalToConstant: 60),
+            profileImage.heightAnchor.constraint(equalToConstant: 50),
+            profileImage.widthAnchor.constraint(equalToConstant: 50),
             
             nameLabel.leadingAnchor.constraint(equalTo: profileImage.trailingAnchor, constant: 10),
             nameLabel.topAnchor.constraint(equalTo: profileImage.topAnchor, constant: 10),
-            
-            locationLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            locationLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 6),
-            
-            moreButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
-            moreButton.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor),
             
             postImage.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: 5),
             postImage.widthAnchor.constraint(equalTo: widthAnchor),
@@ -231,16 +192,19 @@ class HomeCell: UICollectionViewCell {
             likeIcon.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
             likeIcon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             
-            likeCountLabel.leadingAnchor.constraint(equalTo: likeIcon.trailingAnchor, constant: 5),
-            likeCountLabel.centerYAnchor.constraint(equalTo: likeIcon.centerYAnchor),
-            
-            commentIcon.leadingAnchor.constraint(equalTo: likeCountLabel.trailingAnchor, constant: 20),
+            commentIcon.leadingAnchor.constraint(equalTo: likeIcon.trailingAnchor, constant: 20),
             commentIcon.centerYAnchor.constraint(equalTo: likeIcon.centerYAnchor),
             
-            commentCountLabel.leadingAnchor.constraint(equalTo: commentIcon.trailingAnchor, constant: 5),
-            commentCountLabel.centerYAnchor.constraint(equalTo: commentIcon.centerYAnchor),
+            likeIcon.heightAnchor.constraint(equalToConstant: 30),
+            likeIcon.widthAnchor.constraint(equalToConstant: 30),
             
-            shareButton.leadingAnchor.constraint(equalTo: commentCountLabel.trailingAnchor, constant: 20),
+            commentIcon.heightAnchor.constraint(equalToConstant: 30),
+            commentIcon.widthAnchor.constraint(equalToConstant: 30),
+            
+            shareButton.heightAnchor.constraint(equalToConstant: 30),
+            shareButton.widthAnchor.constraint(equalToConstant: 30),
+            
+            shareButton.leadingAnchor.constraint(equalTo: commentIcon.trailingAnchor, constant: 20),
             shareButton.centerYAnchor.constraint(equalTo: commentIcon.centerYAnchor),
             
             

@@ -8,8 +8,9 @@
 
 import UIKit
 import Firebase
+import ProgressHUD
 
-class LoginViewController: UIViewController {
+class LoginViewController: UIViewController, UINavigationControllerDelegate {
     
     let loginView = LoginView()
     
@@ -19,12 +20,17 @@ class LoginViewController: UIViewController {
         navigationController?.navigationBar.isHidden = false
         
         loginView.loginButton.addTarget(self, action: #selector(loginAction), for: .touchUpInside)
+        loginView.cancelButton.addTarget(self, action: #selector(cancelAction), for: .touchUpInside)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        navigationController?.navigationBar.isHidden = false
+    @objc fileprivate func cancelAction() {
+        self.dismiss(animated: true, completion: nil)
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.loginView.endEditing(true)
+    }
+   
     @objc func loginAction(sender: UIButton){
         let email = loginView.emailTextField.text
         let password = loginView.passwordTextField.text
@@ -32,10 +38,14 @@ class LoginViewController: UIViewController {
             Auth.auth().signIn(withEmail: email!, password: password!) { (result, err) in
                 if let err = err {
                     print(err.localizedDescription)
+                    ProgressHUD.showError(err.localizedDescription, interaction: true)
                 } else {
+                    ProgressHUD.showSuccess()
                     self.goToMain()
                 }
             }
+        } else {
+            ProgressHUD.showError("All fields required!", interaction: true)
         }
     }
     
@@ -53,15 +63,7 @@ class LoginViewController: UIViewController {
     
     func goToMain(){
         let vc = TapBarVC()
-        let navController = UINavigationController(rootViewController: vc)
-        self.dismiss(animated: true, completion: nil)
-        navigationController?.present(navController, animated: true, completion: nil)
-        
-//        var window = UIApplication.shared.keyWindow
-//        window = UIWindow()
-//        window?.makeKeyAndVisible()
-//        window?.rootViewController = TapBarVC()
-        
+        self.show(vc, sender: nil)
     }
     
 }

@@ -125,15 +125,15 @@
 		610367CF2351EBD9006C37AA /* Instagram */ = {
 			isa = PBXGroup;
 			children = (
+				610367EF235248E9006C37AA /* Assistant Files */,
+				610367EE235248DD006C37AA /* Models */,
+				610367ED235248D1006C37AA /* Views */,
+				610367EC235248BF006C37AA /* Controllers */,
 				610367D72351EBDB006C37AA /* Assets.xcassets */,
 				610367DC2351EBDB006C37AA /* Info.plist */,
 				611171202387968C00B85E8F /* GoogleService-Info.plist */,
 				610367D92351EBDB006C37AA /* LaunchScreen.storyboard */,
 				610367D02351EBD9006C37AA /* AppDelegate.swift */,
-				610367EF235248E9006C37AA /* Assistant Files */,
-				610367EE235248DD006C37AA /* Models */,
-				610367ED235248D1006C37AA /* Views */,
-				610367EC235248BF006C37AA /* Controllers */,
 			);
 			path = Instagram;
 			sourceTree = "<group>";

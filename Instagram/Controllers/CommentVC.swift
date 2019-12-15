@@ -9,8 +9,6 @@
 import UIKit
 import Firebase
 
-
-
 class CommentVC: UIViewController {
     
     let cellId = "cellId"
@@ -34,7 +32,6 @@ class CommentVC: UIViewController {
         collection.register(CommentCell.self, forCellWithReuseIdentifier: cellId)
         
         button.addTarget(self, action: #selector(commentAction), for: .touchUpInside)
-        
         
         loadComments()
     }
@@ -61,6 +58,7 @@ class CommentVC: UIViewController {
                             return c1.commentDate.compare(c2.commentDate) == .orderedAscending
                         })
                         self.commentView.collectionView.reloadData()
+                        self.scrolling()
                     }, withCancel: { (err) in
                         print("error fetch user:", err)
                     })
@@ -71,8 +69,6 @@ class CommentVC: UIViewController {
         }) { (err) in
             print("error loading comments:", err)
         }
-        
-        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -87,34 +83,43 @@ class CommentVC: UIViewController {
     
     
     @objc fileprivate func commentAction() {
-        
-        guard let commentId = self.post?.id else {return}
-        guard let uid = Auth.auth().currentUser?.uid else {return}
-        
-        let txtField = self.commentView.commentTextfield.text ?? ""
-        let commentRef = Database.database().reference().child("comments").child(commentId).childByAutoId()
-        let values = ["text": txtField,
-        "commentDate": Date().timeIntervalSince1970,
-        "uid": uid] as [String:Any]
-        commentRef.updateChildValues(values) { (err, refernce) in
-            if let err = err {
-                print("comment error:", err)
-                return
-            }
+        if self.commentView.commentTextfield.text != "" {
+            guard let commentId = self.post?.id else {return}
+            guard let uid = Auth.auth().currentUser?.uid else {return}
             
-            print("seccessfully add comment.")
-            self.comment.removeAll()
-            self.loadComments()
+            let txtField = self.commentView.commentTextfield.text ?? ""
+            let commentRef = Database.database().reference().child("comments").child(commentId).childByAutoId()
+            let values = ["text": txtField,
+                          "commentDate": Date().timeIntervalSince1970,
+                          "uid": uid] as [String:Any]
+            commentRef.updateChildValues(values) { (err, refernce) in
+                if let err = err {
+                    print("comment error:", err)
+                    return
+                }
+                self.commentView.commentTextfield.text = ""
+                print("seccessfully add comment.")
+                self.comment.removeAll()
+                self.commentView.collectionView.reloadData()
+                self.loadComments()
+                
+            }
+        } else {
+            return
         }
     }
     
-    
+    fileprivate func scrolling() {
+        let ind = self.comment.count - 1
+        let index = IndexPath(item: ind, section: 0)
+        self.commentView.collectionView.scrollToItem(at: index, at: .top, animated: true)
+    }
     
     
     var containerView: UIView = {
         let containerView = UIView()
         containerView.backgroundColor = UIColor.white
-        containerView.frame = CGRect(x: 0, y: 0, width: 100, height: 60)
+        containerView.frame = CGRect(x: 0, y: 0, width: 100, height: 70)
         return containerView
     }()
     
@@ -124,11 +129,9 @@ class CommentVC: UIViewController {
             containerView.addSubview(commentView.commentButton)
             containerView.addSubview(commentView.separetorView)
             addConstraints()
-            
             return containerView
         }
     }
-    
     
     fileprivate func addConstraints() {
         let txt = self.commentView.commentTextfield
@@ -140,7 +143,6 @@ class CommentVC: UIViewController {
             separetor.widthAnchor.constraint(equalTo: containerView.widthAnchor),
             separetor.heightAnchor.constraint(equalToConstant: 0.5),
             separetor.topAnchor.constraint(equalTo: containerView.topAnchor),
-
             
             button.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
             button.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
@@ -148,11 +150,12 @@ class CommentVC: UIViewController {
             
             txt.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
             txt.trailingAnchor.constraint(equalTo: button.leadingAnchor, constant: -10),
-            txt.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            txt.topAnchor.constraint(equalTo: containerView.topAnchor),
+            txt.bottomAnchor.constraint(equalTo: containerView.safeAreaLayoutGuide.bottomAnchor),
             
             collection.widthAnchor.constraint(equalTo: commentView.widthAnchor),
             collection.topAnchor.constraint(equalTo: commentView.topAnchor),
-            collection.bottomAnchor.constraint(equalTo: commentView.bottomAnchor, constant: -60),
+            collection.bottomAnchor.constraint(equalTo: commentView.bottomAnchor, constant: -70),
             ])
     }
     
@@ -173,24 +176,20 @@ extension CommentVC: UICollectionViewDataSource {
 }
 extension CommentVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-
-        let frame = CGRect(x: 0, y: 0, width: commentView.collectionView.frame.width, height: 50)
-
-        let userCell = CommentCell(frame: frame)
-
-        userCell.comment = comment[indexPath.item]
-        userCell.layoutIfNeeded()
-
-        let targetSize = CGSize(width: commentView.collectionView.frame.width, height: 100)
-
-        let estimatedSize = userCell.systemLayoutSizeFitting(targetSize)
-
-//        let height = max(56, estimatedSize.height)
-
-        return CGSize(width: commentView.collectionView.frame.width, height: 150)
+        if let messegeText = comment[indexPath.row].text as String? {
+            let size = CGSize(width: view.frame.width, height: 100000000)
+            let option = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
+            
+            let esstimateFrame = NSString(string: messegeText).boundingRect(with: size, options: option, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 20)], context: nil)
+            let height = max(40 + 40 + 8, esstimateFrame.height)
+            return CGSize(width: view.frame.width - 18, height: height)
+        }
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 0.5
     }
 }
+
+

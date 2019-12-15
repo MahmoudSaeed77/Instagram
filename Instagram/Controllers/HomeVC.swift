@@ -8,12 +8,12 @@
 
 import UIKit
 import Firebase
+import ProgressHUD
 
 
 class HomeVC: UIViewController {
     var homeView = HomeView()
     let cellId = "cellId"
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,8 +25,6 @@ class HomeVC: UIViewController {
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshAction), for: .valueChanged)
         homeView.collectionView.refreshControl = refreshControl
-        
-        homeView.collectionView.decelerationRate = UIScrollView.DecelerationRate.fast
         
         setupDelegate()
         setupNavigation()
@@ -41,6 +39,9 @@ class HomeVC: UIViewController {
         fetchFollowingPosts()
         posts.sort { (p1, p2) -> Bool in
             return p1.postData.compare(p2.postData) == .orderedAscending
+        }
+        if posts.count == 0 {
+            self.homeView.collectionView.refreshControl?.endRefreshing()
         }
     }
     
@@ -80,14 +81,16 @@ class HomeVC: UIViewController {
                         self.homeView.collectionView.reloadData()
                     }, withCancel: { (err) in
                         print("fetch likes error:", err)
+                        ProgressHUD.showError("Network error try again later!", interaction: true)
                     })
                 })
-                
             }) { (err) in
                 print("error fetching posts:", err)
+                ProgressHUD.showError("Network error try again later!", interaction: true)
             }
         }) { (err) in
             print("fetch name error:", err)
+            ProgressHUD.showError("Network error try again later!", interaction: true)
         }
     }
     
@@ -120,18 +123,22 @@ class HomeVC: UIViewController {
                                 self.homeView.collectionView.reloadData()
                             }, withCancel: { (err) in
                                 print("fetch likes error:", err)
+                                ProgressHUD.showError("Network error try again later!", interaction: true)
                             })
                         })
                         
                     }) { (err) in
                         print("error fetching posts:", err)
+                        ProgressHUD.showError("Network error try again later!", interaction: true)
                     }
                 }) { (err) in
                     print("fetch name error:", err)
+                    ProgressHUD.showError("Network error try again later!", interaction: true)
                 }
             })
         }) { (err) in
             print("error fetching following users:", err)
+            ProgressHUD.showError("Network error try again later!", interaction: true)
         }
     }
     
@@ -168,11 +175,6 @@ extension HomeVC: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension HomeVC: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    }
-}
-
 extension HomeVC: HomeCellProtocol {
     
     func likeTapped(cell: HomeCell) {
@@ -187,6 +189,7 @@ extension HomeVC: HomeCellProtocol {
         dataRef.updateChildValues(values) { (err, _) in
             if let err = err {
                 print("like post error:", err)
+                ProgressHUD.showError("Network error try again later!", interaction: true)
             }
             
             print("successfully like post...")

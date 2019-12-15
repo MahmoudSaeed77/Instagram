@@ -8,7 +8,7 @@
 
 import UIKit
 
-class CommentView: UIView {
+class CommentView: UIView, UITextViewDelegate {
     
     let separetorView: UIView = {
         let view = UIView()
@@ -17,10 +17,10 @@ class CommentView: UIView {
         return view
     }()
     
-    let commentTextfield: UITextField = {
-        let text = UITextField()
+    let commentTextfield: UITextView = {
+        let text = UITextView()
         text.translatesAutoresizingMaskIntoConstraints = false
-        text.placeholder = "Type a comment..."
+        text.font = UIFont.systemFont(ofSize: 16)
         return text
     }()
     
@@ -39,7 +39,7 @@ class CommentView: UIView {
         collection.translatesAutoresizingMaskIntoConstraints = false
         collection.alwaysBounceVertical = true
         layout.scrollDirection = .vertical
-        collection.backgroundColor = UIColor.lightGray
+        collection.backgroundColor = #colorLiteral(red: 0.9289736675, green: 0.9289736675, blue: 0.9289736675, alpha: 1)
         return collection
     }()
     
@@ -47,8 +47,27 @@ class CommentView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor.flatWhite
-        
+        commentTextfield.delegate = self
+        commentTextfield.text = "Type a comment..."
+        commentTextfield.textColor = UIColor.lightGray
         addSubview(collectionView)
+    }
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.textColor == UIColor.lightGray {
+            textView.text = nil
+            textView.textColor = UIColor.black
+        } else {
+            textView.textColor = UIColor.lightGray
+            textView.text = "Type a comment..."
+        }
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.text.isEmpty {
+            textView.text = "Type a comment..."
+            textView.textColor = UIColor.lightGray
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {

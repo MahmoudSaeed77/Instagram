@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import Kingfisher
+import ProgressHUD
 
 protocol HeaderCellDelegate {
     func gridView()
@@ -30,7 +31,7 @@ class ProfileHeaderViewCell: UICollectionViewCell {
         let image = UIImageView()
         image.backgroundColor = UIColor.flatWhite
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFit
+        image.contentMode = .scaleAspectFill
         image.layer.cornerRadius = 40
         image.clipsToBounds = true
         return image
@@ -39,7 +40,6 @@ class ProfileHeaderViewCell: UICollectionViewCell {
     let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = ""
         label.font = UIFont.boldSystemFont(ofSize: 20)
         label.textColor = UIColor.white
         return label
@@ -65,20 +65,24 @@ class ProfileHeaderViewCell: UICollectionViewCell {
     lazy var gridButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(named: "thumb")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.setImage(UIImage(named: "thumb-filled")?.withRenderingMode(.alwaysTemplate), for: .normal)
         button.addTarget(self, action: #selector(gridTapped), for: .touchUpInside)
+        button.tintColor = UIColor.purple
         return button
     }()
     
     @objc func gridTapped() {
         print("grid in cell")
         delegate?.gridView()
+        gridButton.setImage(UIImage(named: "thumb-filled")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        gridButton.tintColor = UIColor.purple
+        listButton.setImage(UIImage(named: "card")?.withRenderingMode(.alwaysOriginal), for: .normal)
     }
     
     lazy var listButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(named: "card")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.setImage(UIImage(named: "card")?.withRenderingMode(.alwaysOriginal), for: .normal)
         button.addTarget(self, action: #selector(listTapped), for: .touchUpInside)
         return button
     }()
@@ -86,21 +90,11 @@ class ProfileHeaderViewCell: UICollectionViewCell {
     @objc func listTapped() {
         print("list in cell")
         delegate?.listView()
+        listButton.setImage(UIImage(named: "card-filled")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        listButton.tintColor = UIColor.purple
+        gridButton.setImage(UIImage(named: "thumb")?.withRenderingMode(.alwaysOriginal), for: .normal)
     }
     
-    let bookmarkButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(named: "photosOfYou")?.withRenderingMode(.alwaysTemplate), for: .normal)
-        return button
-    }()
-    
-    let mapButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(named: "map")?.withRenderingMode(.alwaysTemplate), for: .normal)
-        return button
-    }()
     
     let categoryStack: UIStackView = {
         let stack = UIStackView()
@@ -117,16 +111,51 @@ class ProfileHeaderViewCell: UICollectionViewCell {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(UIImage(named: "follow")?.withRenderingMode(.alwaysTemplate), for: .normal)
         button.addTarget(self, action: #selector(followAction), for: .touchUpInside)
+        button.tintColor = .red
         return button
+    }()
+    
+    let separatorView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = UIColor.init(hexString: "#C5C5C5")
+        return view
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        check()
         setupView()
         setupConstraints()
     }
     
+    fileprivate func check() {
+        guard let currentUserId = Auth.auth().currentUser?.uid else {return}
+        guard let userId = user?.uid else {return}
+        if currentUserId == userId {
+            followButton.isHidden = true
+        } else {
+            followButton.isHidden = false
+            let dataRef = Database.database().reference().child("following").child(currentUserId).child(userId)
+            dataRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                guard let value = snapshot.value as? Int else {return}
+                if value == 1 {
+                    DispatchQueue.main.async {
+                        self.followButton.tintColor = UIColor.green
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.followButton.tintColor = UIColor.red
+                    }
+                }
+            }) { (err) in
+                print("error obtain data", err)
+            }
+        }
+    }
+    
     @objc func followAction() {
+        ProgressHUD.show()
         guard let currentUid = Auth.auth().currentUser?.uid else {return}
         guard let uid = user?.uid else {return}
         
@@ -135,9 +164,11 @@ class ProfileHeaderViewCell: UICollectionViewCell {
             dataRef.removeValue { (err, refernce) in
                 if let err = err {
                     print("follow remove error:", err)
+                    ProgressHUD.showError("Error unfollowing account!", interaction: true)
                     return
                 }
                 print("success remove follow")
+                ProgressHUD.showSuccess("Successfully unfollowed!")
                 self.self.followButton.tintColor = UIColor.red
             }
         } else {
@@ -146,17 +177,15 @@ class ProfileHeaderViewCell: UICollectionViewCell {
             dataRef.updateChildValues(values) { (err, refernce) in
                 if let err = err {
                     print("error following:", err)
+                    ProgressHUD.showError("Error following account!", interaction: true)
                     return
                 }
                 print("successfully following ", self.user?.fullName ?? "")
+                ProgressHUD.showSuccess("Successfully followed!")
                 self.self.followButton.tintColor = UIColor.green
             }
         }
     }
-    
-    
-    
-    
     
     var user: User? {
         didSet {
@@ -171,13 +200,21 @@ class ProfileHeaderViewCell: UICollectionViewCell {
                 dataRef.observeSingleEvent(of: .value, with: { (snapshot) in
                     guard let value = snapshot.value as? Int else {return}
                     if value == 1 {
-                        self.followButton.tintColor = UIColor.green
+                        DispatchQueue.main.async {
+                            self.followButton.tintColor = UIColor.green
+                        }
                     } else {
-                        self.followButton.tintColor = UIColor.red
+                        DispatchQueue.main.async {
+                            self.followButton.tintColor = UIColor.red
+                        }
                     }
                 }) { (err) in
                     print("error obtain data", err)
                 }
+            }
+            
+            DispatchQueue.main.async {
+                self.nameLabel.text = self.user?.fullName
             }
         }
     }
@@ -199,9 +236,7 @@ class ProfileHeaderViewCell: UICollectionViewCell {
         addSubview(categoryStack)
         categoryStack.addArrangedSubview(gridButton)
         categoryStack.addArrangedSubview(listButton)
-        categoryStack.addArrangedSubview(bookmarkButton)
-        categoryStack.addArrangedSubview(mapButton)
-        
+        addSubview(separatorView)
         followButton.isHidden = true
         
     }
@@ -234,6 +269,9 @@ class ProfileHeaderViewCell: UICollectionViewCell {
             categoryStack.bottomAnchor.constraint(equalTo: bottomAnchor),
             categoryStack.heightAnchor.constraint(equalToConstant: 60),
             
+            separatorView.widthAnchor.constraint(equalTo: widthAnchor),
+            separatorView.heightAnchor.constraint(equalToConstant: 0.5),
+            separatorView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
             ])
         

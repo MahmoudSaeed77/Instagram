@@ -25,36 +25,36 @@ class TapBarVC: UITabBarController, UITabBarControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
+        setupControllers()
         
-        
+    }
+    func setupControllers() {
         let homeVC = HomeVC()
         let homeController = UINavigationController(rootViewController: homeVC)
         homeController.tabBarItem.image = UIImage(named: "home")?.withRenderingMode(.alwaysOriginal)
-        homeController.tabBarItem.selectedImage = UIImage(named: "home2")?.withRenderingMode(.alwaysOriginal)
+        homeController.tabBarItem.selectedImage = UIImage(named: "home-filled")?.withRenderingMode(.alwaysOriginal)
         
         
         let searchVC = SearchVC()
         let SearchController = UINavigationController(rootViewController: searchVC)
         SearchController.tabBarItem.image = UIImage(named: "search")?.withRenderingMode(.alwaysOriginal)
-        SearchController.tabBarItem.selectedImage = UIImage(named: "search_filled")?.withRenderingMode(.alwaysOriginal)
+        SearchController.tabBarItem.selectedImage = UIImage(named: "search-filled")?.withRenderingMode(.alwaysOriginal)
         
         
         
         let photosVC = PhotoSelectorController()
         let photosController = UINavigationController(rootViewController: photosVC)
-        photosController.tabBarItem.image = UIImage(named: "thumb")?.withRenderingMode(.alwaysOriginal)
-        photosController.tabBarItem.selectedImage = UIImage(named: "thumb")?.withRenderingMode(.alwaysOriginal)
+        photosController.tabBarItem.image = UIImage(named: "photo")?.withRenderingMode(.alwaysOriginal)
+        photosController.tabBarItem.selectedImage = UIImage(named: "photo")?.withRenderingMode(.alwaysOriginal)
         
         
         
         let profileVC = ProfileVC()
         let profileController = UINavigationController(rootViewController: profileVC)
-        profileController.tabBarItem.image = UIImage(named: "profileNone")?.withRenderingMode(.alwaysOriginal)
-        profileController.tabBarItem.selectedImage = UIImage(named: "Profile")?.withRenderingMode(.alwaysOriginal)
+        profileController.tabBarItem.image = UIImage(named: "profile")?.withRenderingMode(.alwaysOriginal)
+        profileController.tabBarItem.selectedImage = UIImage(named: "profile-filled")?.withRenderingMode(.alwaysOriginal)
         
         
         viewControllers = [homeController, SearchController, photosController, profileController]
-        
     }
-    
 }

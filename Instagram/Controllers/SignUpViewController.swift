@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import ProgressHUD
 
 class SignUpViewController: UIViewController {
     
@@ -20,17 +21,19 @@ class SignUpViewController: UIViewController {
         
         signupView.loginButton.addTarget(self, action: #selector(loginAction), for: .touchUpInside)
         signupView.avatarButton.addTarget(self, action: #selector(avatarAction), for: .touchUpInside)
+        signupView.cancelButton.addTarget(self, action: #selector(cancelAction), for: .touchUpInside)
         
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        navigationController?.navigationBar.isHidden = false
+    @objc fileprivate func cancelAction() {
+        self.dismiss(animated: true, completion: nil)
     }
+    
     
     
     @objc func loginAction(sender: UIButton){
         
-        
+        ProgressHUD.show()
         let db = Database.database().reference()
         let storage = Storage.storage().reference()
         guard let firstName = signupView.firstNameTextField.text else {return}
@@ -52,6 +55,7 @@ class SignUpViewController: UIViewController {
                     storage.child("profileImages").child(fileName).putData(uploadImage, metadata: nil, completion: { (metaData, err) in
                         if let err = err {
                             print("Error uploading profile image \(err)")
+                            ProgressHUD.showError(err.localizedDescription)
                         }
                         print("seccess uploading profile image")
                         
@@ -60,6 +64,7 @@ class SignUpViewController: UIViewController {
                         starsRef.downloadURL { url, error in
                             if let error = error {
                                 print("error getting url \(error)")
+                                ProgressHUD.showError(error.localizedDescription)
                             } else {
                                 // for adding values to database
                                 guard let uid = Auth.auth().currentUser?.uid else {return}
@@ -77,14 +82,15 @@ class SignUpViewController: UIViewController {
                                 db.child("users").updateChildValues(values, withCompletionBlock: { (err, refernce) in
                                     if err != nil {
                                         print("Error adding name fields: \(String(describing: err))")
+                                        ProgressHUD.showError(err?.localizedDescription)
                                     } else {
                                         print("Success adding name fields")
                                     }
                                 })
                             }
                         }
-                        
-                        
+                        ProgressHUD.dismiss()
+                        ProgressHUD.showSuccess()
                         
                         self.goToMain()
 
@@ -92,6 +98,8 @@ class SignUpViewController: UIViewController {
                     
                     }
             }
+        } else {
+            ProgressHUD.showError("All fields required!", interaction: true)
         }
     }
     
@@ -111,8 +119,7 @@ class SignUpViewController: UIViewController {
     
     func goToMain(){
         let vc = TapBarVC()
-        let navController = UINavigationController(rootViewController: vc)
-        navigationController?.present(navController, animated: true, completion: nil)
+        self.show(vc, sender: nil)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

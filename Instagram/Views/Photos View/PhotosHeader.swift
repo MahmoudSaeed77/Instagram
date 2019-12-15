@@ -15,6 +15,7 @@ class PhotosHeader: UICollectionViewCell {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.backgroundColor = UIColor.flatWhite
+        image.contentMode = .scaleAspectFit
         return image
     }()
     override init(frame: CGRect) {

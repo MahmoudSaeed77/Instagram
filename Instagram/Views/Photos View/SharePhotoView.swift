@@ -11,23 +11,20 @@ import ChameleonFramework
 
 class SharePhotoView: UIView {
     
-    let containerView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = UIColor.flatPlum
-        return view
-    }()
-    
     let imageView: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleToFill
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
         return image
     }()
     
-    let captionTextView: UITextView = {
-        let text = UITextView()
+    let captionTextView: UITextField = {
+        let text = UITextField()
         text.translatesAutoresizingMaskIntoConstraints = false
+        text.textColor = UIColor.black
+        text.font = UIFont.systemFont(ofSize: 16)
+        text.placeholder = "type your caption here..."
         return text
     }()
     
@@ -40,26 +37,26 @@ class SharePhotoView: UIView {
     fileprivate func setupView() {
         backgroundColor = UIColor.white
         
-        addSubview(containerView)
-        containerView.addSubview(imageView)
-        containerView.addSubview(captionTextView)
+        addSubview(captionTextView)
+        addSubview(imageView)
     }
     
     fileprivate func setupConstraints() {
         NSLayoutConstraint.activate([
-            containerView.widthAnchor.constraint(equalTo: widthAnchor),
-            containerView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
-            containerView.heightAnchor.constraint(equalToConstant: 100),
             
-            imageView.widthAnchor.constraint(equalToConstant: 84),
-            imageView.heightAnchor.constraint(equalToConstant: 84),
-            imageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8),
-            imageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             
-            captionTextView.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8),
-            captionTextView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
-            captionTextView.heightAnchor.constraint(equalToConstant: 84),
-            captionTextView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
+            captionTextView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            captionTextView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            captionTextView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
+            captionTextView.bottomAnchor.constraint(equalTo: imageView.topAnchor, constant: -10),
+            
+            
+            imageView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
+            imageView.heightAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
+            imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            
+            
             ])
     }
     

@@ -29,6 +29,7 @@ class SignUpView: UIView {
         button.setTitle("Tap to chose Profile Image", for: .normal)
         button.titleLabel?.numberOfLines = 0
         button.tintColor = UIColor.red
+        button.imageView?.contentMode = .scaleAspectFill
         return button
     }()
     
@@ -117,6 +118,14 @@ class SignUpView: UIView {
         return stack
     }()
     
+        let cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(named: "x")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.tintColor = UIColor.red
+        return button
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor.red
@@ -145,9 +154,12 @@ class SignUpView: UIView {
         endEditing(true)
     }
     
+    
+    
     fileprivate func setupView(){
         backgroundColor = FlatWatermelon()
         addSubview(backgroundImage)
+        addSubview(cancelButton)
         addSubview(avatarButton)
         addSubview(fieldsStack)
         fieldsStack.addArrangedSubview(nameStack)
@@ -163,6 +175,11 @@ class SignUpView: UIView {
             
             backgroundImage.widthAnchor.constraint(equalTo: widthAnchor),
             backgroundImage.heightAnchor.constraint(equalTo: heightAnchor),
+            
+            cancelButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
+            cancelButton.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 10),
+            cancelButton.heightAnchor.constraint(equalToConstant: 20),
+            cancelButton.widthAnchor.constraint(equalToConstant: 20),
             
             avatarButton.centerXAnchor.constraint(equalTo: centerXAnchor),
             avatarButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 20),

@@ -39,23 +39,11 @@ class SearchCell: UICollectionViewCell {
         return label
     }()
     
-    let noPostsLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "7 posts"
-        label.font = UIFont.systemFont(ofSize: 12)
-        label.textColor = UIColor.lightGray
-        return label
-    }()
-    
-    
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor.white
         addSubview(profileImage)
         addSubview(nameLabel)
-        addSubview(noPostsLabel)
         NSLayoutConstraint.activate([
             profileImage.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             profileImage.heightAnchor.constraint(equalToConstant: 90),
@@ -65,10 +53,6 @@ class SearchCell: UICollectionViewCell {
             nameLabel.leadingAnchor.constraint(equalTo: profileImage.trailingAnchor, constant: 10),
             nameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
             nameLabel.topAnchor.constraint(equalTo: topAnchor, constant: 20),
-            
-            noPostsLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            noPostsLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-            noPostsLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20)
             ])
     }
     

@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import ProgressHUD
 
 class SharePhotoController: UIViewController {
     let shareView = SharePhotoView()
@@ -22,7 +23,14 @@ class SharePhotoController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Share", style: .plain, target: self, action: #selector(shareAction))
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.shareView.endEditing(true)
+    }
+    
     @objc func shareAction() {
+        resignFirstResponder()
+        ProgressHUD.show()
+        self.navigationItem.rightBarButtonItem?.isEnabled = false
         let fileName = NSUUID().uuidString
         
         guard let image = selectedImage else {return}
@@ -36,7 +44,6 @@ class SharePhotoController: UIViewController {
                 self.navigationItem.rightBarButtonItem?.isEnabled = true
                 return
             }
-            
             print("successfully uploaded post image")
             
                 storageRef.downloadURL(completion: { (url, err) in
@@ -68,11 +75,13 @@ class SharePhotoController: UIViewController {
         ref.updateChildValues(values) { (err, ref) in
             if let err = err {
                 print("error adding post informations to database:", err)
-                self.navigationItem.rightBarButtonItem?.isEnabled = false
+                self.navigationItem.rightBarButtonItem?.isEnabled = true
                 return
             }
             print("successfully adding post informations")
             self.navigationItem.rightBarButtonItem?.isEnabled = false
+            ProgressHUD.dismiss()
+            ProgressHUD.showSuccess()
             self.dismiss(animated: true, completion: nil)
             let name = NSNotification.Name(rawValue: "loadPosts")
             NotificationCenter.default.post(name: name, object: nil)

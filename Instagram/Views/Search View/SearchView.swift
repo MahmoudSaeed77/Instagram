@@ -16,7 +16,7 @@ class SearchView: UIView {
         collection.translatesAutoresizingMaskIntoConstraints = false
         collection.alwaysBounceVertical = true
         layout.scrollDirection = .vertical
-        collection.backgroundColor = UIColor.lightGray
+        collection.backgroundColor = #colorLiteral(red: 0.9646012187, green: 0.9647662044, blue: 0.9645908475, alpha: 1)
         return collection
     }()
     

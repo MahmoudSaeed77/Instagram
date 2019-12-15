@@ -13,7 +13,7 @@ class HomeView: UIView {
     let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collection.backgroundColor = #colorLiteral(red: 0.9646012187, green: 0.9647662044, blue: 0.9645908475, alpha: 1)
+        collection.backgroundColor = #colorLiteral(red: 0.9317496827, green: 0.9317496827, blue: 0.9317496827, alpha: 1)
         collection.translatesAutoresizingMaskIntoConstraints = false
         layout.scrollDirection = .vertical
         collection.alwaysBounceVertical = true

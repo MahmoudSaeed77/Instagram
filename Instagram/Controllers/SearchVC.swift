@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import ProgressHUD
 
 class SearchVC: UIViewController {
     let cellId = "cellId"
@@ -23,6 +24,14 @@ class SearchVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        ProgressHUD.show()
+        
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshAction), for: .valueChanged)
+        searchView.collectionView.refreshControl = refreshControl
+        
+        
+        
         view = searchView
         self.navigationController?.navigationBar.addSubview(searchBar)
         let nav = navigationController?.navigationBar
@@ -36,6 +45,19 @@ class SearchVC: UIViewController {
         self.searchView.collectionView.keyboardDismissMode = .onDrag
         
         fetchUsers()
+    }
+    
+    @objc fileprivate func refreshAction() {
+        self.user.removeAll()
+        self.searchView.collectionView.reloadData()
+        fetchUsers()
+        if user.count == 0 {
+            self.searchView.collectionView.refreshControl?.endRefreshing()
+        }
+    }
+    
+    @objc fileprivate func loadPosts() {
+        refreshAction()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -65,6 +87,8 @@ class SearchVC: UIViewController {
             })
             self.searchView.collectionView.reloadData()
             self.filteredUsers = self.user
+            ProgressHUD.dismiss()
+            self.searchView.collectionView.refreshControl?.endRefreshing()
         }) { (err) in
             print("error fetching users:", err)
         }

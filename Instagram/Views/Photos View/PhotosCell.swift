@@ -13,6 +13,8 @@ class PhotosCell: UICollectionViewCell {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.backgroundColor = UIColor.flatNavyBlue
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
         return image
     }()
     override init(frame: CGRect) {

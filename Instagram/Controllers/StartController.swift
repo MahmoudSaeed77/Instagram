@@ -31,9 +31,9 @@ class StartController: UIViewController {
         addTargets()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        navigationController?.navigationBar.isHidden = true
-    }
+//    override func viewWillAppear(_ animated: Bool) {
+//        navigationController?.navigationBar.isHidden = true
+//    }
     
     func startTimer() {
         timer = Timer.scheduledTimer(timeInterval: 4.0, target: self, selector: #selector(timeAction), userInfo: nil, repeats: true)
@@ -61,7 +61,7 @@ class StartController: UIViewController {
         }else if sender.currentTitle == "Signup"{
             vc = SignUpViewController()
         }
-        navigationController?.pushViewController(vc, animated: true)
+        self.present(vc, animated: true, completion: nil)
     }
 }
 

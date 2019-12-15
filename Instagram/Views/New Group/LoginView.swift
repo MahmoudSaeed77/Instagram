@@ -67,6 +67,14 @@ class LoginView: UIView {
         return stack
     }()
     
+    let cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(named: "x")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.tintColor = UIColor.red
+        return button
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -86,6 +94,7 @@ class LoginView: UIView {
     fileprivate func setupView(){
         backgroundColor = FlatWatermelon()
         addSubview(backgroundImage)
+        addSubview(cancelButton)
         addSubview(fieldsStack)
         fieldsStack.addArrangedSubview(emailTextField)
         fieldsStack.addArrangedSubview(passwordTextField)
@@ -97,6 +106,11 @@ class LoginView: UIView {
             
             backgroundImage.widthAnchor.constraint(equalTo: widthAnchor),
             backgroundImage.heightAnchor.constraint(equalTo: heightAnchor),
+            
+            cancelButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
+            cancelButton.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 10),
+            cancelButton.heightAnchor.constraint(equalToConstant: 20),
+            cancelButton.widthAnchor.constraint(equalToConstant: 20),
             
             fieldsStack.topAnchor.constraint(equalTo: topAnchor, constant: 200),
             fieldsStack.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.8),
