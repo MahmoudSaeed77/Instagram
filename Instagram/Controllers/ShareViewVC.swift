@@ -13,7 +13,7 @@ class ShareViewVC: NSObject {
     let overlayView = UIView()
     
     let mainId = "mainId"
-    let socialArray = ["Facebook", "Twitter", "Pinterest", "Google+", "Mail", "Link"]
+    let socialArray = ["Facebook", "map", "Pinterest", "Google+", "Mail", "Link"]
     let imageNames = ["doda", "2", "3", "4", "5", "6", "7", "8", "9", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
     let names = ["Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika", "Barakat", "El Hadary", "Mahmoud Saeed", "Abo Trika"]
     
