@@ -5,9 +5,15 @@ There is no StoryBoard.
 All design build programmatically.
 Pretty simple design hopefully you guys like it.
 
-![](1.png)
-![](2.png)
-![](3.png)
-![](4.png)
+## Time Line
 ![](5.png)
+## Following people
+![](3.png)
+## Explore who is with you
+![](2.png)
+## Search for specific people to follow
+![](1.png)
+## Share your photos and add your own captions
+![](4.png)
+## Easy to register
 ![](6.png)
